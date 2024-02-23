@@ -43,7 +43,7 @@ public class AuthController {
                         .build());
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody LoginDto loginDto) {
 
          return ResponseEntity.status(HttpStatus.OK)
