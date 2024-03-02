@@ -38,6 +38,7 @@ public class ClinicController {
     public ResponseMessage save(@Valid @RequestBody ClinicDto clinicDto) {
 
         User user = authService.getCurrentUser();
+
         DoctorDetails doctorDetails =  doctorService.findByUser(user);
         Long clinicId = clinicService.save(clinicDto , doctorDetails);
 

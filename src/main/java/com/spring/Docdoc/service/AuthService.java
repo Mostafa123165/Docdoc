@@ -129,7 +129,7 @@ public class AuthService {
     public void activateUserAccount(String otp, String email) {
 
         User user = activateValidation(otp,email);
-        userService.save(user,-1L,null);
+        userService.update(user);
     }
 
     private User activateValidation(String otp, String email) {
