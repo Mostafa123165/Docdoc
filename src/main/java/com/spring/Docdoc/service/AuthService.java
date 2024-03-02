@@ -1,13 +1,11 @@
 package com.spring.Docdoc.service;
 
-import com.spring.Docdoc.dto.AuthenticationResponse;
-import com.spring.Docdoc.dto.ChangePasswordDto;
-import com.spring.Docdoc.dto.LoginDto;
-import com.spring.Docdoc.dto.NotificationEmailDto;
+import com.spring.Docdoc.dto.*;
 import com.spring.Docdoc.entity.Otp;
 import com.spring.Docdoc.entity.User;
 import com.spring.Docdoc.exception.CustomException;
 import com.spring.Docdoc.exception.NotFoundException;
+import com.spring.Docdoc.mapper.UserCustomUserDetailsMapper;
 import com.spring.Docdoc.security.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.Data;
@@ -19,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
@@ -35,16 +34,16 @@ import java.util.concurrent.ExecutionException;
 public class AuthService {
 
     final private UserService userService;
-    final private otpService otpService;
+    final private mailService mailService;
     final private JwtProvider jwtProvider;
     final private AuthenticationManager authenticationManager;
     final private BCryptPasswordEncoder bCryptPasswordEncoder ;
-
+    final private UserCustomUserDetailsMapper userCustomUserDetailsMapper ;
     @Value("${jwt.expiration.time}")
     private Long jwtExpirationTime;
 
     @Transactional
-    public void signUp(User user) throws CustomException, ExecutionException, InterruptedException {
+    public void signUp(User user , Long specialityId , String aboutMe) throws ExecutionException, InterruptedException {
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
@@ -53,7 +52,7 @@ public class AuthService {
         // Block and wait until emailAndPhoneCheck finished
         emailAndPhoneCheck.get();
 
-        userService.save(user);
+        userService.save(user,specialityId,aboutMe);
 
         if (user.getId() == null) {
             throw new CustomException("Saved user unsuccessful - " +
@@ -65,17 +64,17 @@ public class AuthService {
 
     private CompletableFuture<Void> emailAndPhoneCheck(User user) {
         CompletableFuture<Void> phoneCheckFuture = CompletableFuture.runAsync(() ->
-                CheckOnPhone(user.getPhone()));
+                checkOnPhone(user.getPhone()));
 
         CompletableFuture<Void> emailCheckFuture = CompletableFuture.runAsync(() ->
-                CheckOnEmail(user.getEmail()));
+                checkOnEmail(user.getEmail()));
 
         return  CompletableFuture.allOf(phoneCheckFuture , emailCheckFuture) ;
 
     }
 
     private void sendOtp(User user , Long oldOtpId) {
-        otpService.sendOtp(NotificationEmailDto
+        mailService.sendOtp(NotificationEmailDto
                         .builder()
                         .subject("Docdoc")
                         .recipient(user.getEmail())
@@ -87,7 +86,7 @@ public class AuthService {
 
     @Async
     @Transactional(Transactional.TxType.REQUIRED)
-    public void CheckOnEmail(String email) {
+    public void checkOnEmail(String email) {
 
         User userWithEmail = userService.getByEmail(email);
         if (userWithEmail != null)
@@ -97,7 +96,7 @@ public class AuthService {
 
     @Async
     @Transactional(Transactional.TxType.REQUIRED)
-    public void CheckOnPhone(String phone) {
+    public void checkOnPhone(String phone) {
 
         User userWithPhone = userService.getByPhone(phone);
         if (userWithPhone != null)
@@ -120,6 +119,7 @@ public class AuthService {
                .builder()
                .status(HttpStatus.OK.value())
                .token(token)
+               .message("Logged in successfully")
                .createAt(jwtProvider.convertFromInstantToString(Instant.now()))
                .expiredAt(jwtProvider.convertFromInstantToString(
                        Instant.now().plusSeconds(jwtExpirationTime)))
@@ -129,10 +129,7 @@ public class AuthService {
     public void activateUserAccount(String otp, String email) {
 
         User user = activateValidation(otp,email);
-
-        userService.save(user);
-
-        log.info("User account activated: {}", user.getEmail());
+        userService.save(user,-1L,null);
     }
 
     private User activateValidation(String otp, String email) {
@@ -144,7 +141,7 @@ public class AuthService {
         if(user.getIsActivated())
             throw new CustomException("Your email is already activated");
 
-        Otp otpEntity = otpService.getByUser(user);
+        Otp otpEntity = mailService.getByUser(user);
 
         if (otpEntity == null)
             throw new CustomException("OTP not found for user");
@@ -163,7 +160,7 @@ public class AuthService {
 
     public void refreshOtp(String email) {
         User user = userService.getByEmail(email) ;
-        Otp otp = otpService.getByUser(user) ;
+        Otp otp = mailService.getByUser(user) ;
         sendOtp(user,otp.getId());
     }
 
@@ -172,9 +169,29 @@ public class AuthService {
         if(passwordDto.isValid()) {
            User user = userService.getByEmail(passwordDto.getEmail()) ;
            user.setPassword(bCryptPasswordEncoder.encode(passwordDto.getNewPassword()));
-           userService.save(user);
+           userService.update(user);
         }
         else
             throw new CustomException("Passwords do not match. Please make sure the passwords match.");
+    }
+
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication() ;
+
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        return  userCustomUserDetailsMapper.mapToUser(customUserDetails) ;
+    }
+
+    public void checkOtp(String otp, String email) {
+
+        User user = userService.getByEmail(email) ;
+        if(user == null) throw new NotFoundException("User not found with email: " + email);
+
+        Otp otpEntity = mailService.getByUser(user);
+
+        if (!StringUtils.equals(otpEntity.getOtpValue(), otp))
+            throw new CustomException("Incorrect OTP: " + otp);
+
     }
 }

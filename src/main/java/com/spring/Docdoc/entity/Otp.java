@@ -24,7 +24,7 @@ public class Otp {
     @Column(name = "expired_at")
     private Instant expiredAt ;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user ;
 

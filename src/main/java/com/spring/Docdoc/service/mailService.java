@@ -5,7 +5,6 @@ import com.spring.Docdoc.entity.Otp;
 import com.spring.Docdoc.entity.User;
 import com.spring.Docdoc.mapper.OtpMapper;
 import com.spring.Docdoc.repository.OtpRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
@@ -15,19 +14,20 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
-import java.util.Optional;
 import java.util.Random;
 
 @Service
 @Slf4j
 @AllArgsConstructor
-public class otpService {
+public class mailService {
 
     private final JavaMailSender mailSender;
-    private final MailContentService mailContentService;
     private final OtpRepository otpRepository;
     private final OtpMapper otpMapper;
+    private TemplateEngine templateEngine;
 
     public void sendOtp(NotificationEmailDto notificationEmail , User user,Long oldOtpId) {
         String otp = generateOTP() ;
@@ -36,7 +36,7 @@ public class otpService {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage) ;
             messageHelper.setTo(notificationEmail.getRecipient());
             messageHelper.setSubject(notificationEmail.getSubject());
-            messageHelper.setText(mailContentService.build(otp),true);
+            messageHelper.setText(buildContentMail(otp),true);
         };
 
         try {
@@ -55,7 +55,6 @@ public class otpService {
     }
 
 
-
     @Async
     public void save(Otp otp) {
         otpRepository.save(otp) ;
@@ -72,4 +71,12 @@ public class otpService {
 
         return otpRepository.findByUser(user) ;
     }
+
+
+    private String buildContentMail(String otp) {
+        Context context = new Context() ;
+        context.setVariable("otp",otp);
+        return templateEngine.process("OtpTemplate",context);
+    }
+
 }

@@ -8,6 +8,7 @@ import com.spring.Docdoc.exception.NotFoundException;
 import com.spring.Docdoc.repository.UserRepository;
 import com.spring.Docdoc.utilits.Enums.Role;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,25 +29,29 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
 
-        Optional<User> user = userRepository.findByEmail(username) ;
-        user.orElseThrow(() ->  new NotFoundException("Not found user with email - " + username) ) ;
+        Optional<User> userOptional = userRepository.findByEmail(username) ;
+        userOptional.orElseThrow(() ->  new BadCredentialsException("Incorrect username or password.")) ;
+        User user = userOptional.get() ;
 
         return new CustomUserDetails(
-                user.get().getId() ,
-                user.get().getPassword(),
-                user.get().getFirstName() + " " + user.get().getLastName() ,
-                user.get().getIsActivated() ,
+                user.getId() ,
+                user.getPassword(),
+                user.getFirstName() ,
+                user.getLastName() ,
+                user.getIsActivated() ,
                 true,
                 true,
                 true,
-                getAuthorities(user.get().getRole()),
-                user.get().getEmail(),
-                user.get().getCreatedAt()
+                getAuthorities(user.getRole()),
+                user.getEmail(),
+                user.getCreatedAt(),
+                user.getImage() ,
+                user.getPhone()
         );
 
     }
 
     Collection<? extends GrantedAuthority> getAuthorities(Role role) {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_"+role.name()));
     }
 }

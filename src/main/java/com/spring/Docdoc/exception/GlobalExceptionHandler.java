@@ -10,9 +10,9 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<MessageResponse> globalException(Exception exception) {
+    public ResponseEntity<ResponseMessage> globalException(Exception exception) {
 
-        MessageResponse customMessage =  MessageResponse.builder()
+        ResponseMessage customMessage =  ResponseMessage.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message(exception.getMessage()).build() ;
 

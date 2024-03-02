@@ -49,6 +49,6 @@ public class User {
     private Boolean isActivated;
 
     @Column(name = "created_at")
-    private Instant CreatedAt ;
+    private Instant createdAt ;
 
 }

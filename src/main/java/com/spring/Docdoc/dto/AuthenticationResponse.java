@@ -10,6 +10,7 @@ import lombok.Data;
 public class AuthenticationResponse {
 
     private int status ;
+    private String message ;
     private String token ;
     private String createAt ;
     private String expiredAt ;

@@ -15,7 +15,8 @@ public class CustomUserDetails implements UserDetails {
 
     private Long id;
     private String password;
-    private String userName;
+    private String firstName;
+    private String lastName;
     private Boolean enabled;
     private Boolean accountNonExpired ;
     private Boolean credentialsNonExpired ;
@@ -23,6 +24,8 @@ public class CustomUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities ;
     private String email ;
     private Instant createdAt;
+    private String image ;
+    private String phone ;
 
 
     @Override
@@ -37,7 +40,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userName;
+        return firstName+lastName;
     }
 
     @Override
