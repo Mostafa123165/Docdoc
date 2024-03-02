@@ -126,6 +126,7 @@ public class AuthService {
                .build();
     }
 
+    @Transactional
     public void activateUserAccount(String otp, String email) {
 
         User user = activateValidation(otp,email);
