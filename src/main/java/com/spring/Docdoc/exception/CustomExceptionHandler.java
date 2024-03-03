@@ -1,6 +1,7 @@
 package com.spring.Docdoc.exception;
 
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
+@Order(1)
 public class CustomExceptionHandler {
 
     @ExceptionHandler(value = CustomException.class)
