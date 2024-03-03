@@ -51,6 +51,7 @@ public class DoctorService {
         return specialityRepository.findAll();
     }
 
+    @Transactional
     public void saveSpeciality(String specialityName , MultipartFile multipartFile) throws IOException {
 
         String imagePath = specialityName
