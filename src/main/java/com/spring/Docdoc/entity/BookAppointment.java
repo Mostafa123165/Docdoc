@@ -1,3 +1,4 @@
+/*
 package com.spring.Docdoc.entity;
 
 import com.spring.Docdoc.utilits.Enums.BookingState;
@@ -54,3 +55,4 @@ public class BookAppointment {
     @Column(name = "price")
     private double price;
 }
+*/
