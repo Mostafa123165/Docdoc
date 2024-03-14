@@ -1,6 +1,5 @@
 package com.spring.Docdoc.dto;
 
-import com.spring.Docdoc.entity.Speciality;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,7 @@ public class DoctorDetailsDto {
 
     private String aboutMe ;
 
-    private Speciality speciality ;
+    private SpecialityDto speciality ;
 
     private UserDto user ;
 }

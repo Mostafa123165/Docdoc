@@ -1,4 +1,3 @@
-/*
 package com.spring.Docdoc.entity;
 
 import com.spring.Docdoc.utilits.Enums.BookingState;
@@ -7,7 +6,7 @@ import com.spring.Docdoc.utilits.Enums.Day;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.Instant;
+
 
 @Entity
 @Data
@@ -24,29 +23,31 @@ public class BookAppointment {
     private User user ;
 
     @OneToOne
+    @JoinColumn(name = "doctor_id")
+    private User doctor ;
+
+    @OneToOne
     @JoinColumn(name = "clinic_id")
     private Clinic clinic;
 
-    @OneToOne
-    @JoinColumn(name = "doctor_id")
-    private DoctorDetails doctorDetails ;
-
     @Column(name = "booking_date")
-    private Instant bookingDate ;
+    private String bookingDate ;
 
-    @Column(name = "start_time")
-    private Instant startTime ;
+    @OneToOne
+    @JoinColumn(name = "work_time_id")
+    private WorkTimes workTime ;
 
-    @Column(name = "end_time")
-    private Instant endTime ;
+    @OneToOne
+    @JoinColumn(name = "work_day_id")
+    private WorkDays workDay ;
 
-    @Column(name = "day")
-    private Day day ;
 
     @Column(name = "booking_state")
+    @Enumerated(EnumType.STRING)
     private BookingState bookingState ;
 
     @Column(name = "booking_type")
+    @Enumerated(EnumType.STRING)
     private BookingType bookingType ;
 
     @Column(name = "payment")
@@ -55,4 +56,4 @@ public class BookAppointment {
     @Column(name = "price")
     private double price;
 }
-*/
+

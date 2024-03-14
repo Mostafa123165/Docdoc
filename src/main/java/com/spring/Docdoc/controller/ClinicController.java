@@ -10,6 +10,7 @@ import com.spring.Docdoc.mapper.ClinicMapper;
 import com.spring.Docdoc.mapper.ClinicResponseMapper;
 import com.spring.Docdoc.service.*;
 
+import com.spring.Docdoc.utilits.Enums.Day;
 import jakarta.validation.Valid;
 
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class ClinicController {
     final private ClinicMapper clinicMapper;
     final private ClinicResponseMapper clinicResponseMapper;
     final private ImageService imageService;
+    final private UserService userService;
 
     @PostMapping
     public ResponseMessage save(@Valid @RequestBody ClinicDto clinicDto) {
@@ -81,8 +83,10 @@ public class ClinicController {
     }
 
     @GetMapping("/doctorClinics")
-    public List<ClinicResponse> findDoctorClinics(@RequestParam int page) {
-        User user = authService.getCurrentUser() ;
+    public List<ClinicResponse> findDoctorClinics(@RequestParam int page
+                                                  , @RequestParam Long id) {
+        User user = userService.findById(id) ;
+
         List<Clinic> clinics =  clinicService.findClinicsByDoctorDetails(
                 doctorService.findByUser(user)
                 ,page
@@ -93,5 +97,7 @@ public class ClinicController {
                 .map(clinicResponseMapper::mapToClinicResponse)
                 .collect(Collectors.toList()) ;
     }
+
+
 
  }

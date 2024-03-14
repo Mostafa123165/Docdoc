@@ -64,6 +64,12 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.POST,"/api/clinic")
                                 .hasRole("DOCTOR")
+                                .requestMatchers(HttpMethod.GET,"/api/speciality")
+                                .permitAll()
+                                .requestMatchers("/api/my-appointment/patient")
+                                .hasRole("USER")
+                                .requestMatchers("/api/my-appointment/doctor")
+                                .hasRole("DOCTOR")
                                 .anyRequest()
                                 .hasAnyRole("USER","DOCTOR")
                 ).exceptionHandling(exceptions -> exceptions

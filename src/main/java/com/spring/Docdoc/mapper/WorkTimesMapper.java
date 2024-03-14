@@ -13,4 +13,7 @@ public interface WorkTimesMapper {
     @Mapping(target = "workDays" ,  source = "workDays")
     @Mapping(target = "price" ,  source = "workTimesDto.price")
     WorkTimes mapToWorkTimes(WorkTimesDto workTimesDto , WorkDays workDays);
+
+    @Mapping(target = "id" , source = "id")
+    WorkTimesDto mapToWorkTimesDto(WorkTimes workTimes) ;
 }

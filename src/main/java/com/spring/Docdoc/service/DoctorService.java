@@ -25,12 +25,13 @@ public class DoctorService {
     final private SpecialityRepository specialityRepository ;
     final private ImageService imageService ;
 
+    @Transactional
     public DoctorDetails findByUser(User user) {
 
         return doctorRepository.findByUser(user) ;
     }
 
-
+    @Transactional
     public Speciality findSpecialityById(Long id) {
 
         Optional<Speciality> specialityOptional =  specialityRepository.findById(id) ;
@@ -40,12 +41,13 @@ public class DoctorService {
         return specialityOptional.get() ;
     }
 
+    @Transactional
     public void save(DoctorDetails doctorDetails) {
 
         doctorRepository.save(doctorDetails);
     }
 
-
+    @Transactional
     public List<Speciality> findAllSpeciality() {
 
         return specialityRepository.findAll();
@@ -72,6 +74,7 @@ public class DoctorService {
         imageService.saveImage(multipartFile , imagePath);
     }
 
+    @Transactional
     public Speciality findBySpecialityName(String specialityName) {
         Optional<Speciality> speciality = specialityRepository.findByName(specialityName) ;
         return speciality.orElse(null);
@@ -83,5 +86,10 @@ public class DoctorService {
         specialityRepository.deleteById(id);
     }
 
+    @Transactional
+    public DoctorDetails findById(Long id){
+        Optional<DoctorDetails> doctorDetails = doctorRepository.findById(id) ;
+        return doctorDetails.orElse(null) ;
+    }
 
 }

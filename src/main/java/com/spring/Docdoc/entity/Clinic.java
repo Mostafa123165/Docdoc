@@ -2,9 +2,7 @@ package com.spring.Docdoc.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringExclude;
 
-import java.util.List;
 
 @Entity
 @Data
@@ -28,7 +26,7 @@ public class Clinic {
     @Column(name = "longitude")
     private double longitude ;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
     private DoctorDetails doctorDetails;
 

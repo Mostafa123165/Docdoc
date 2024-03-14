@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDto {
 
+    private Long id ;
+
     @NotBlank(message = "firstName is required")
     private String firstName ;
 

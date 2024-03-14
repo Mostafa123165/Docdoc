@@ -12,6 +12,8 @@ import java.time.format.DateTimeFormatter;
 @Data
 public class WorkTimesDto {
 
+    private Long id ;
+
     @NotBlank(message = "start is required")
     private String start ;
 
