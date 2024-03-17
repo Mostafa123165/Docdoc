@@ -51,6 +51,17 @@ public class ClinicController {
                 .build();
     }
 
+    @DeleteMapping
+    public ResponseMessage deleteClinic(@RequestParam Long id) {
+        clinicService.delete(id);
+
+        return ResponseMessage
+                .builder()
+                .status(HttpStatus.OK.value())
+                .message("Deleted clinic successfully")
+                .build();
+    }
+
     @PostMapping("/image")
     public ResponseMessage uploadClinicImage(
                        @RequestParam MultipartFile multipartFile ,
@@ -97,7 +108,5 @@ public class ClinicController {
                 .map(clinicResponseMapper::mapToClinicResponse)
                 .collect(Collectors.toList()) ;
     }
-
-
 
  }

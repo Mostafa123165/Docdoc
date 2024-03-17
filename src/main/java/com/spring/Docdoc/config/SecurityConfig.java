@@ -29,6 +29,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 
 
 @Configuration
@@ -48,6 +49,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
 
+
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize ->
@@ -62,7 +64,7 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/image/**")
                                 .permitAll()
-                                .requestMatchers(HttpMethod.POST,"/api/clinic")
+                                .requestMatchers(Arrays.toString(new HttpMethod[]{HttpMethod.POST, HttpMethod.DELETE}),"/api/clinic")
                                 .hasRole("DOCTOR")
                                 .requestMatchers(HttpMethod.GET,"/api/speciality")
                                 .permitAll()

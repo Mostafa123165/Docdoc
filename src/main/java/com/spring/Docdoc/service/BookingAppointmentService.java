@@ -9,6 +9,7 @@ import com.spring.Docdoc.repository.BookAppointmentRepository;
 import com.spring.Docdoc.repository.WorkDaysRepository;
 import com.spring.Docdoc.repository.WorkTimesRepository;
 import com.spring.Docdoc.utilits.Enums.BookingState;
+import com.spring.Docdoc.utilits.Enums.BookingType;
 import com.spring.Docdoc.utilits.Enums.Day;
 import com.spring.Docdoc.utilits.Enums.Role;
 import jakarta.transaction.Transactional;
@@ -41,23 +42,23 @@ public class BookingAppointmentService {
     final private SpecialityMapper specialityMapper;
 
     @Transactional
-    public ReservationDto addNewBookAppointment(BookAppointmentDto bookAppointmentDto) {
+    public ReservationDto addNewBookAppointment(BookingAppointmentDto bookingAppointmentDto) {
 
         User patient = authService.getCurrentUser();
-        Clinic clinic = clinicService.findById(bookAppointmentDto.getClinicId());
-        Optional<WorkTimes> workTimeOptional = workTimesRepository.findById(bookAppointmentDto.getWorkTimeId());
+        Clinic clinic = clinicService.findById(bookingAppointmentDto.getClinicId());
+        Optional<WorkTimes> workTimeOptional = workTimesRepository.findById(bookingAppointmentDto.getWorkTimeId());
 
         if (workTimeOptional.isEmpty()) {
-            throw new NotFoundException("Not found workTime with id: " + bookAppointmentDto.getWorkTimeId());
+            throw new NotFoundException("Not found workTime with ID: " + bookingAppointmentDto.getWorkTimeId());
         }
 
         WorkTimes workTime = workTimeOptional.get();
         WorkDays workDay = workTime.getWorkDays();
 
-        validateBookAppointmentRequest(patient, clinic, workDay, bookAppointmentDto);
+        validateBookAppointmentRequest(patient, clinic, workDay, bookingAppointmentDto);
 
         BookAppointment bookAppointment = bookAppointmentMapper.MapToBookAppointMent(
-                bookAppointmentDto,
+                bookingAppointmentDto,
                 patient,
                 clinic.getDoctorDetails().getUser(),
                 clinic,
@@ -65,7 +66,7 @@ public class BookingAppointmentService {
                 workDay
         );
 
-        checkFoundBookAppointmentDto(workTime, bookAppointmentDto.getBookingDate());
+        checkFoundBookAppointmentDto(workTime, bookingAppointmentDto.getBookingDate());
 
         try {
             bookAppointmentRepository.save(bookAppointment);
@@ -86,8 +87,15 @@ public class BookingAppointmentService {
 
 
     private void checkFoundBookAppointmentDto(WorkTimes workTimes, String bookingDate) {
+
+        List<BookingState> bookingStates = Arrays.asList(BookingState.UPCOMING, BookingState.COMPLETED);
+
         Optional<BookAppointment> bookAppointment = bookAppointmentRepository
-                .findByBookingDateAndWorkTime(bookingDate, workTimes);
+                .findByBookingDateAndWorkTimeAndBookingStates(
+                        bookingDate,
+                        workTimes,
+                        bookingStates);
+
         if (bookAppointment.isPresent()) {
             throw new CustomException("The time is already reserved.");
         }
@@ -97,7 +105,7 @@ public class BookingAppointmentService {
     private void validateBookAppointmentRequest(User patient,
                                                 Clinic clinic,
                                                 WorkDays workDay,
-                                                BookAppointmentDto bookAppointmentDto) {
+                                                BookingAppointmentDto bookingAppointmentDto) {
 
         if (patient.getRole() == Role.DOCTOR) {
             throw new CustomException("Invalid appointment request. Only patients can make reservations.");
@@ -107,15 +115,15 @@ public class BookingAppointmentService {
             throw new NotFoundException("Not found clinic with ID: " + clinic.getId());
         }
 
-        if (!Objects.equals(workDay.getClinic().getId(), bookAppointmentDto.getClinicId())) {
-            throw new CustomException("The clinic ID associated with the work time does not match: " + bookAppointmentDto.getClinicId());
+        if (!Objects.equals(workDay.getClinic().getId(), bookingAppointmentDto.getClinicId())) {
+            throw new CustomException("The clinic ID associated with the work time does not match: " + bookingAppointmentDto.getClinicId());
         }
 
-        if (!Objects.equals(workDay.getDay(), getDayByDate(bookAppointmentDto.getBookingDate()))) {
-            throw new CustomException("The day associated with the work time does not match the day of the booking date: " + bookAppointmentDto.getBookingDate());
+        if (!Objects.equals(workDay.getDay(), getDayByDate(bookingAppointmentDto.getBookingDate()))) {
+            throw new CustomException("The day associated with the work time does not match the day of the booking date: " + bookingAppointmentDto.getBookingDate());
         }
 
-        LocalDate date = LocalDate.parse(bookAppointmentDto.getBookingDate());
+        LocalDate date = LocalDate.parse(bookingAppointmentDto.getBookingDate());
         LocalDate currentDate = LocalDate.now();
         long days = ChronoUnit.DAYS.between(currentDate, date);
 
@@ -144,13 +152,18 @@ public class BookingAppointmentService {
             return Collections.emptyList();
         }
 
-        return workTimesRepository.findByWorkDays(workDaysOptional.get(), date);
+        return workTimesRepository.findByWorkDays(
+                workDaysOptional.get(),
+                date,
+                BookingState.UPCOMING,
+                BookingState.COMPLETED
+        );
 
     }
 
     private void validateAvailableTimeRequest(String date) {
 
-        BookAppointmentDto.validateDateFormat(date);
+        BookingAppointmentDto.validateDateFormat(date);
 
     }
 
@@ -236,4 +249,41 @@ public class BookingAppointmentService {
                 .collect(Collectors.toList());
     }
 
+
+    public BookAppointment findByIdAndPatient(Long id) {
+
+        Optional<BookAppointment> bookAppointmentOptional = bookAppointmentRepository
+                .findByIdAndUser(
+                        id,
+                        authService.getCurrentUser()
+                );
+
+        if(bookAppointmentOptional.isEmpty()) {
+            bookAppointmentOptional = bookAppointmentRepository
+                    .findByIdAndDoctor(
+                            id,
+                            authService.getCurrentUser()
+                    );
+        }
+
+        return bookAppointmentOptional.orElse(null);
+    }
+
+    @Transactional
+    public void update(BookAppointment bookAppointment) {
+
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        BookAppointment bookAppointment = findByIdAndPatient(id);
+
+        if(bookAppointment == null) {
+            throw new NotFoundException("Invalid reservation or patient id");
+        }
+
+        bookAppointment.setBookingState(BookingState.CANCELLED);
+
+        bookAppointmentRepository.save(bookAppointment);
+    }
 }

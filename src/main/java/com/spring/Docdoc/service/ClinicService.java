@@ -38,6 +38,8 @@ public class ClinicService {
     private final WorkDayMapper workDayMapper;
     private final WorkTimesMapper workTimesMapper;
     private final ImageService imageService;
+    private final AuthService authService;
+    private final DoctorService doctorService;
 
 
 
@@ -118,7 +120,26 @@ public class ClinicService {
         clinicRepository.save(clinic);
     }
 
+    @Transactional
+    public void delete(Long id) {
+        User user = authService.getCurrentUser();
+        DoctorDetails doctorDetails = doctorService.findByUser(user);
 
+        Optional<Clinic> clinicOptional = clinicRepository.findByIdAndDoctorDetails(
+                id,
+                doctorDetails
+        );
 
-
+        if(clinicOptional.isPresent()) {
+            Clinic clinic = clinicOptional.get() ;
+            List<WorkDays> workDays = workDaysRepository.findByClinic(clinic);
+            for(WorkDays workDay : workDays) {
+                workTimesRepository.deleteByWorkDays(workDay);
+                workDaysRepository.delete(workDay);
+            }
+            clinicRepository.delete(clinicOptional.get());
+        }
+        else
+            throw new NotFoundException("The doctor is not associated with this clinic ID:" + id);
+    }
 }

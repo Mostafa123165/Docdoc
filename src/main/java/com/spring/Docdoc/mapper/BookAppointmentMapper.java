@@ -1,6 +1,6 @@
 package com.spring.Docdoc.mapper;
 
-import com.spring.Docdoc.dto.BookAppointmentDto;
+import com.spring.Docdoc.dto.BookingAppointmentDto;
 import com.spring.Docdoc.entity.*;
 import com.spring.Docdoc.service.BookingAppointmentService;
 import com.spring.Docdoc.utilits.Enums.BookingState;
@@ -12,15 +12,15 @@ import org.mapstruct.Mapping;
 public interface BookAppointmentMapper {
 
 
-    @Mapping(target = "id" , ignore = true)
+    @Mapping(target = "id" , source = "bookingAppointmentDto.id")
     @Mapping(target = "bookingState" ,expression = "java(getBookingState())")
-    @Mapping(target = "bookingType" ,source = "bookAppointmentDto.bookingType")
-    @Mapping(target = "payment" ,source = "bookAppointmentDto.payment")
+    @Mapping(target = "bookingType" ,source = "bookingAppointmentDto.bookingType")
+    @Mapping(target = "payment" ,source = "bookingAppointmentDto.payment")
     @Mapping(target = "price" ,source = "workTime.price")
     @Mapping(target = "workTime" ,source = "workTime")
     @Mapping(target = "workDay" ,source = "workDay")
     BookAppointment MapToBookAppointMent(
-            BookAppointmentDto bookAppointmentDto,
+            BookingAppointmentDto bookingAppointmentDto,
             User user,
             User doctor,
             Clinic clinic,
@@ -33,9 +33,9 @@ public interface BookAppointmentMapper {
         return BookingState.UPCOMING ;
     }
 
-    default Day getDay(BookAppointmentDto bookAppointmentDto) {
+    default Day getDay(BookingAppointmentDto bookingAppointmentDto) {
 
-        return  BookingAppointmentService.getDayByDate(bookAppointmentDto.getBookingDate()) ;
+        return  BookingAppointmentService.getDayByDate(bookingAppointmentDto.getBookingDate()) ;
 
     }
 

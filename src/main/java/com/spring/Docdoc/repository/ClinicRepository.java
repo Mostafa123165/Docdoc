@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ClinicRepository extends JpaRepository<Clinic,Long> {
 
@@ -20,5 +21,7 @@ public interface ClinicRepository extends JpaRepository<Clinic,Long> {
     List<Clinic> findNearby(Pageable pageable, double latitude, double longitude);
 
     List<Clinic> findByDoctorDetails(DoctorDetails doctorDetails,Pageable pageable) ;
+
+    Optional<Clinic> findByIdAndDoctorDetails(Long id , DoctorDetails doctorDetails);
 
 }

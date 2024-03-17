@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public interface MyAppointmentMapper {
 
 
+    @Mapping(target = "id",          source = "bookAppointment.id")
     @Mapping(target = "image",       source = "user.image")
     @Mapping(target = "firstName",   source = "user.firstName")
     @Mapping(target = "lastName",    source = "user.lastName")

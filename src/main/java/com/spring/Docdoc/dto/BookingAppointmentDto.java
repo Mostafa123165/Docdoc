@@ -8,7 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class BookAppointmentDto {
+public class BookingAppointmentDto {
+
+    private Long id ;
 
     @NotNull(message = "clinic_id is required")
     private Long clinicId;

@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class MyAppointmentDto {
 
+    private Long id ;
     private String image ;
     private String firstName;
     private String lastName;
