@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ClinicDto {
 
+    private Long id ;
     @NotBlank(message = "name is required")
     private String name ;
 

@@ -14,5 +14,6 @@ public interface ClinicMapper {
     Clinic mapToClinic(ClinicDto clinicDto , DoctorDetails doctorDetails) ;
 
     @Mapping(target = "workDays" , ignore = true)
+    @Mapping(target = "id" , source = "id")
     ClinicDto mapToClinicDto(Clinic clinic);
 }
